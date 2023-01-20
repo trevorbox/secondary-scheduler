@@ -8,7 +8,8 @@ image:
   repository: k8s.gcr.io/scheduler-plugins/kube-scheduler
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: v0.24.9
+  # tag: v0.24.9 # for k8s v1.24
+  tag: v0.23.9 # for k8s v1.23
 
 imagePullSecrets: []
 nameOverride: ""
@@ -27,8 +28,8 @@ podAnnotations: {}
 
 podSecurityContext: 
   runAsNonRoot: true
-  seccompProfile:
-    type: RuntimeDefault
+  # seccompProfile:
+  #   type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false

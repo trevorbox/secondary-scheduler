@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: secondary-scheduler-system-volume-scheduler
+  name: {{ include "secondary-scheduler.serviceAccountName" . }}-system-volume-scheduler
 subjects:
   - kind: ServiceAccount
     name: {{ include "secondary-scheduler.serviceAccountName" . }}

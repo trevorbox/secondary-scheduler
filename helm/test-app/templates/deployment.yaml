@@ -1,14 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "secondary-scheduler.fullname" . }}
+  name: {{ include "test-app.fullname" . }}
   labels:
-    {{- include "secondary-scheduler.labels" . | nindent 4 }}
+    {{- include "test-app.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      {{- include "secondary-scheduler.selectorLabels" . | nindent 6 }}
+      {{- include "test-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,48 +18,36 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "secondary-scheduler.selectorLabels" . | nindent 8 }}
+        {{- include "test-app.selectorLabels" . | nindent 8 }}
     spec:
+      schedulerName: {{ .Values.schedulerName | default "default-scheduler"}}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "secondary-scheduler.serviceAccountName" . }}
+      serviceAccountName: {{ include "test-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          env:
-            - name: ENABLE_OPENSHIFT_AUTH
-              value: "true"
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args:
-            - /bin/kube-scheduler
-            - '--config=/etc/kubernetes/config.yaml'
-            - '-v=2'
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           ports:
             - name: http
-              containerPort: 10259
+              containerPort: 8080
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /healthz
-              port: 10259
-              scheme: HTTPS
-            initialDelaySeconds: 15
+              path: /
+              port: http
           readinessProbe:
             httpGet:
-              path: /healthz
-              port: 10259
-              scheme: HTTPS
-          volumeMounts:
-            - mountPath: /etc/kubernetes
-              name: etckubernetes
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -70,7 +60,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: etckubernetes
-          configMap:
-            name: secondary-scheduler-config
