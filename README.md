@@ -23,6 +23,14 @@ helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set
 helm upgrade --install bad-test-app helm/test-app -n ${ns} --set schedulerName=bad-scheduler --create-namespace
 ```
 
+## test autoscaling
+
+in ROSA, create a machine pool with taint and label. next, update helm/test-app/values-test.yaml with resource requests nodeSelector and tolerations to match the machine pool labels that should autoscale.
+
+```sh
+helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=0 -f helm/test-app/values-test.yaml --create-namespace
+```
+
 ## delete
 
 ```sh
