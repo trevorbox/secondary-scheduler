@@ -13,13 +13,13 @@ helm upgrade --install secondary-scheduler helm/secondary-scheduler -n secondary
 ```sh
 export ns=${test_namespace}
 
-# default-scheduler
+# default-scheduler - the pod is scheduled using the default-scheduler
 helm upgrade --install default-scheduler-test-app helm/test-app -n ${ns} --create-namespace
 
-# secondary-scheduler
+# secondary-scheduler - the pod is scheduled using the secondary-scheduler
 helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --create-namespace
 
-# bad-scheduler
+# bad-scheduler - the pod cannot be scheduled since the schedulerName doesn't match any avialable scheduler
 helm upgrade --install bad-test-app helm/test-app -n ${ns} --set schedulerName=bad-scheduler --create-namespace
 ```
 
@@ -28,6 +28,8 @@ helm upgrade --install bad-test-app helm/test-app -n ${ns} --set schedulerName=b
 Add a machine pool test in ROSA with autoscaling enabled and protect the nodes from the default-scheduler using a taint.
 
 Apps using the pool and secondary scheduler need to specify the schedulerName, tolerate the taint and select the nodes.
+
+Note: if using a descheduler in tandem, a good strategy is to also label the nodes that the descheduler should act upon (descheduler=true).
 
 ```sh
 export cluster= #Name or ID of the cluster.
@@ -43,7 +45,7 @@ rosa create machinepool --cluster=${cluster} \
 
 ## test autoscaling
 
-in ROSA, create a machine pool with taint and label. next, update helm/test-app/values-test.yaml with resource requests nodeSelector and tolerations to match the machine pool labels that should autoscale.
+In ROSA, a machine pool with a taint and labels should have been created. Pods scheduled on these nodes should only occur from the secondary scheduler, therefore the taint is used for specific workloads to tolerate.  Next, use helm/test-app/values-test.yaml with schedulerName, resource requests nodeSelector and tolerations to match the machine pool labels that should autoscale.
 
 ```sh
 helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=5 -f helm/test-app/values-test.yaml --create-namespace
