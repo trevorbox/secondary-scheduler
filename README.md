@@ -45,7 +45,7 @@ rosa create machinepool --cluster=${cluster} \
 
 ## test autoscaling
 
-In ROSA, a machine pool with a taint and labels should have been created. Pods scheduled on these nodes should only occur from the secondary scheduler, therefore the taint is used for specific workloads to tolerate.  Next, use helm/test-app/values-test.yaml with schedulerName, resource requests nodeSelector and tolerations to match the machine pool labels that should autoscale.
+In ROSA, a machine pool with a taint and labels should have been created. Pods scheduled on these nodes should only occur from the secondary scheduler, therefore the taint is used for specific workloads to tolerate.  Next, use helm/test-app/values-test.yaml with schedulerName, resource requests/limits, nodeSelector and tolerations to match the machine pool that should autoscale.
 
 ```sh
 helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=5 -f helm/test-app/values-test.yaml --create-namespace
