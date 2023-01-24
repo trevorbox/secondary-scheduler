@@ -23,12 +23,36 @@ helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set
 helm upgrade --install bad-test-app helm/test-app -n ${ns} --set schedulerName=bad-scheduler --create-namespace
 ```
 
+## create machinepools
+
+Add a machine pool test in ROSA with autoscaling enabled and protect the nodes from the default-scheduler using a taint.
+
+Apps using the pool and secondary scheduler need to specify the schedulerName, tolerate the taint and select the nodes.
+
+```sh
+export cluster= #Name or ID of the cluster.
+rosa create machinepool --cluster=${cluster} \
+  --name=test \
+  --instance-type=m5.xlarge \
+  --enable-autoscaling \
+  --min-replicas=0 \
+  --max-replicas=2 \
+  --labels=descheduler=true,secondaryScheduler=true \
+  --taints=secondaryScheduler=true:NoSchedule
+```
+
 ## test autoscaling
 
 in ROSA, create a machine pool with taint and label. next, update helm/test-app/values-test.yaml with resource requests nodeSelector and tolerations to match the machine pool labels that should autoscale.
 
 ```sh
-helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=0 -f helm/test-app/values-test.yaml --create-namespace
+helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=5 -f helm/test-app/values-test.yaml --create-namespace
+```
+
+Next, change the resource requests which should cause the pool to scale down nodes.
+
+```sh
+helm upgrade --install secondary-scheduler-test-app helm/test-app -n ${ns} --set schedulerName=secondary-scheduler --set replicaCount=5 -f helm/test-app/values-test-small.yaml --create-namespace
 ```
 
 ## delete
