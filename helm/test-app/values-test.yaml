@@ -1,3 +1,5 @@
+schedulerName: secondary-scheduler
+
 nodeSelector: 
   secondaryScheduler: "true"
 
