@@ -4,8 +4,16 @@ Since the default scheduler cannot be modified in ROSA, a secondary kubernetes s
 
 Deploy a secondary kubernetes scheduler in a custom namespace (this scheduler should be equivalent to the [HighNodeUtilization](https://docs.openshift.com/container-platform/4.12/nodes/scheduling/nodes-scheduler-profiles.html#nodes-scheduler-profiles-about_nodes-scheduler-profiles) scheduler profile)...
 
+We run three pods with leader election for HA. In production, use a PodTopologySpreadConstraint or anti-affinity to schedule them across nodes.
+
 ```sh
 helm upgrade --install secondary-scheduler helm/secondary-scheduler -n secondary-scheduler --create-namespace
+```
+
+View the lease...
+
+```sh
+oc get lease -n secondary-scheduler
 ```
 
 ## test

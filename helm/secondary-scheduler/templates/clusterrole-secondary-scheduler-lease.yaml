@@ -1,0 +1,23 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "secondary-scheduler.serviceAccountName" . }}-lease
+rules:
+  - verbs:
+      - get
+      - update
+    apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    resourceNames:
+      - secondary-scheduler
+  - verbs:
+      - get
+      - update
+    apiGroups:
+      - ''
+    resources:
+      - endpoints
+    resourceNames:
+      - secondary-scheduler

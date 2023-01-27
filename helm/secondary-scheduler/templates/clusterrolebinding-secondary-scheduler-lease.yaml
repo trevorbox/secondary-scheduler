@@ -1,0 +1,12 @@
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "secondary-scheduler.serviceAccountName" . }}-lease
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "secondary-scheduler.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "secondary-scheduler.serviceAccountName" . }}-lease
+  apiGroup: rbac.authorization.k8s.io
